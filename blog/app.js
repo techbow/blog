@@ -21,6 +21,8 @@ app.use(session({
   })
 }));
 
+require('./db');
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
