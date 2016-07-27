@@ -10,11 +10,21 @@ var User = require('../db').User;
 // });
 
 router.get('/', function(req, res){
-	res.render('index', {title: 'home'});
+	res.render('index', {
+		title: 'home',
+		user: req.session.user,
+		success: req.flash('success').toString(),
+		error: req.flash('error').toString()
+	});
 });
 
 router.get('/reg', function(req, res){
-	res.render('reg', {title: 'register'});
+	res.render('reg', {
+		title: 'register',
+		user: req.session.user,
+		success: req.flash('success').toString(),
+		error: req.flash('error').toString()
+	});
 });
 
 router.post('/reg', function(req, res){
@@ -34,11 +44,11 @@ router.post('/reg', function(req, res){
 	//check whether user already registered
 	User.findOne({name: req.body.name}, function(err, user){
 		if (err) {
-			req.flash('reg_check_error', err);
+			req.flash('error', 'reg_check_error' + err);
 			return res.redirect('/');
 		}
 		if (user) {
-			req.flash('reg_check_duplicate', 'User Exists! Please choose another username!');
+			req.flash('error', 'reg_check_duplicate: User Exists! Please choose another username!');
 			return res.redirect('/reg');
 		}
 		// save hashed password together with outher info to db
@@ -48,11 +58,11 @@ router.post('/reg', function(req, res){
 			email: req.body.email
 		}).save(function(err, user){
 			if (err) {
-				req.flash('reg_error', err);
+				req.flash('error', 'reg_error: ' + err);
 				res.redirect('/');
 			}
 			req.session.user = user;
-			req.flash('reg_success', 'Register Successfully!');
+			req.flash('success', 'reg_success: Register Successfully!');
 			res.redirect('/');
 		});
 	});
