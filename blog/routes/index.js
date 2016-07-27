@@ -3,6 +3,7 @@ var router = express.Router();
 var crypto = require('crypto');
 var mongoose = require('mongoose');
 var User = require('../db').User;
+var Blog = require('../db').Blog;
 
 /* GET home page. */
 // router.get('/', function(req, res, next) {
@@ -10,11 +11,17 @@ var User = require('../db').User;
 // });
 
 router.get('/', function(req, res){
-	res.render('index', {
+	Blog.find({}, function(err, posts){
+		if (err) {
+			req.flash('error', 'home_post_error' + err);
+		}
+		res.render('index', {
 		title: 'home',
 		user: req.session.user,
+		posts: posts || [],
 		success: req.flash('success').toString(),
 		error: req.flash('error').toString()
+	});
 	});
 });
 
@@ -59,7 +66,7 @@ router.post('/reg', function(req, res){
 		}).save(function(err, user){
 			if (err) {
 				req.flash('error', 'reg_error: ' + err);
-				res.redirect('/');
+				return res.redirect('/');
 			}
 			req.session.user = user;
 			req.flash('success', 'reg_success: Register Successfully!');
@@ -103,11 +110,31 @@ router.post('/login', function(req, res){
 });
 
 router.get('/post', function(req, res){
-	res.render('post', {title: 'login'});
+	res.render('post', {
+		title: 'post',
+		user: req.session.user,
+		success: req.flash('success').toString(),
+		error: req.flash('error').toString()
+	});
 });
 
 router.post('/post', function(req, res){
+	// save hashed password together with outher info to db
 	
+	new Blog({
+		name: req.session.user.name,
+		title: req.body.title,
+		post: req.body.post,
+		time: getTimeObject()
+	}).save(function(err, blog){
+		if (err) {
+			req.flash('error', 'post_error: ' + err);
+			return res.redirect('/');
+		}
+		req.flash('success', 'post_success: post Successfully!');
+		res.redirect('/');
+	});
+	//console.log(getTimeObject());
 });
 
 router.get('/logout', function(req, res){
@@ -116,5 +143,17 @@ router.get('/logout', function(req, res){
 	res.redirect('/');
 });
 
+var getTimeObject = function () {
+	var date = new Date();
+	var timeObj = {
+		date: date,
+      	year : date.getFullYear(),
+     	month : date.getFullYear() + "-" + (date.getMonth() + 1),
+      	day : date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
+      	minute : date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + 
+      	date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes())
+	};
+	return timeObj;
+};
 
 module.exports = router;

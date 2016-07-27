@@ -7,8 +7,10 @@ var User = new Schema({
 	email: String
 });
 var Blog = new Schema({
-	subject: String,
-	content: String
+	name: String,
+	title: String,
+	post: String,
+	time: Object
 });
 
 var conUser = mongoose.createConnection('mongodb://localhost/user');
