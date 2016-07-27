@@ -5,6 +5,9 @@ var mongoose = require('mongoose');
 var User = require('../db').User;
 var Blog = require('../db').Blog;
 
+var Markdown = require('markdown');
+var multer = require('multer');
+
 /* GET home page. */
 // router.get('/', function(req, res, next) {
 //   res.render('index', { title: 'Express' });
@@ -15,10 +18,16 @@ router.get('/', function(req, res){
 		if (err) {
 			req.flash('error', 'home_post_error' + err);
 		}
+		if (!posts) {
+			posts = [];
+		}
+		// posts.forEach(function(post){
+		// 	post.post = Markdown.markdown.toHTML(post.post);
+		// });
 		res.render('index', {
 		title: 'home',
 		user: req.session.user,
-		posts: posts || [],
+		posts: posts,
 		success: req.flash('success').toString(),
 		error: req.flash('error').toString()
 	});
@@ -141,6 +150,34 @@ router.get('/logout', function(req, res){
 	req.session.user = null;
 	req.flash('success', 'logout successfully!');
 	res.redirect('/');
+});
+
+
+router.get('/upload', function(req, res){
+	res.render('upload', {
+		title: 'upload',
+		user: req.session.user,
+		success: req.flash('success').toString(),
+		error: req.flash('error').toString()
+	});
+});
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb){
+        cb(null, './public/images')
+    },
+    filename: function (req, file, cb){
+        cb(null, file.originalname)
+    }
+});
+
+var upload = multer({
+    storage: storage
+});
+
+router.post('/upload', upload.array('field', 5) ,function(req, res){
+	req.flash('success', 'upload_success: upload Successfully!');
+	res.redirect('/upload');
 });
 
 var getTimeObject = function () {
