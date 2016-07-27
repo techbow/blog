@@ -24,7 +24,7 @@ router.post('/reg', function(req, res){
 	if (password != passwordtwo) {
 		req.flash('error', 'password and confirmed password not match!');
 		//console.log(req.session.flash);
-		res.redirect('/reg');
+		return res.redirect('/reg');
 	}
 
 	// hash original password to keep privacy
