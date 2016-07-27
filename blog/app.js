@@ -14,14 +14,14 @@ var app = express();
 
 app.use(session({
   secret: 'hahahahahaha',
-  key: 'blog',//cookie name
+  key: 'user',//cookie name
   cookie: {maxAge: 1000 * 60 * 60 * 24 * 30},//30 days
   store: new MongoStore({
-    url: 'mongodb://localhost/blog'
+    url: 'mongodb://localhost/user'
   })
 }));
 
-require('./db');
+//require('./db');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
