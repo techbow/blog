@@ -69,11 +69,37 @@ router.post('/reg', function(req, res){
 });
 
 router.get('/login', function(req, res){
-	res.render('login', {title: 'login'});
+	res.render('login', {
+		title: 'login',
+		user: req.session.user,
+		success: req.flash('success').toString(),
+		error: req.flash('error').toString()
+	});
 });
 
 router.post('/login', function(req, res){
-	
+	// hash original password to keep privacy
+	var md5 = crypto.createHash('md5');
+	var password = md5.update(req.body.password).digest('hex');
+
+	User.findOne({name: req.body.name}, function(err, user){
+		if (err) {
+			req.flash('error', 'login_findUser_error: ' + err);
+			return res.redirect('/');
+		}
+		if (!user) {
+			req.flash('error', 'username or password not correct!');
+			return res.redirect('/login');
+		}
+		// save hashed password together with outher info to db
+		if (password != user.password) {
+			req.flash('error', 'username or password not correct!');
+			return res.redirect('/login');
+		}
+		req.session.user = user;
+		req.flash('success', 'login successfully!');
+		res.redirect('/');
+	});
 });
 
 router.get('/post', function(req, res){
@@ -85,7 +111,9 @@ router.post('/post', function(req, res){
 });
 
 router.get('/logout', function(req, res){
-	
+	req.session.user = null;
+	req.flash('success', 'logout successfully!');
+	res.redirect('/');
 });
 
 
